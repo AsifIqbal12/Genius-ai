@@ -7,7 +7,6 @@ import { Heading } from "@/components/heading";
 import {  MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { ChatCompletionRequestMessage } from "openai";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -23,7 +22,12 @@ import { BotAvatar } from "@/components/bot-avatar";
 const ConversationPage = () => {
 
     const router=useRouter();
-    const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
+    const [messages, setMessages] = useState([
+        {
+            role:"system",
+            content:"Ask please"
+        }
+    ]);
 
     
 
@@ -38,11 +42,20 @@ const ConversationPage = () => {
 
 const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionRequestMessage = { role: "user", content: values.prompt };
-      const newMessages = [...messages, userMessage];
+      const userMessage= { role: "user", content: values.prompt };let newMessages;
+      if(messages.length==1){
+        newMessages=[userMessage];
+      }
+      else
+      newMessages = [...messages, userMessage];
       
       const response = await axios.post('/api/conversation', { messages: newMessages });
+      if(messages.length==1){
+        setMessages([userMessage,response.data]);
+      }
+      else
       setMessages((current) => [...current, userMessage, response.data]);
+      console.log(userMessage);
       
       form.reset();
     } catch (error: any) {

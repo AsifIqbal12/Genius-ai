@@ -7,7 +7,6 @@ import { Heading } from "@/components/heading";
 import {  Code, MessageSquare } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { ChatCompletionRequestMessage } from "openai";
 import { formSchema } from "./constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
@@ -24,7 +23,12 @@ import ReactMarkdown from "react-markdown";
 const CodePage = () => {
 
     const router=useRouter();
-    const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
+    const [messages, setMessages] = useState([
+        {
+            role:"system",
+            content:"Ask please"
+        }
+    ]);
 
     
 
@@ -39,10 +43,14 @@ const CodePage = () => {
 
 const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionRequestMessage = { role: "user", content: values.prompt };
+      const userMessage= { role: "user", content: values.prompt };
       const newMessages = [...messages, userMessage];
       
       const response = await axios.post('/api/code', { messages: newMessages });
+      if(messages.length==1){
+        setMessages([userMessage,response.data]);
+      }
+      else
       setMessages((current) => [...current, userMessage, response.data]);
       
       form.reset();
