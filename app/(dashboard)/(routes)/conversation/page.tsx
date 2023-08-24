@@ -43,17 +43,11 @@ const ConversationPage = () => {
 const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const userMessage= { role: "user", content: values.prompt };let newMessages;
-      if(messages.length==1){
-        newMessages=[userMessage];
-      }
-      else
+      
       newMessages = [...messages, userMessage];
       
       const response = await axios.post('/api/conversation', { messages: newMessages });
-      if(messages.length==1){
-        setMessages([userMessage,response.data]);
-      }
-      else
+      
       setMessages((current) => [...current, userMessage, response.data]);
       console.log(userMessage);
       
